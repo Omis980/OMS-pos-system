@@ -547,7 +547,7 @@
 
 
     /* ── PASSWORD MODAL ────────────────────────────────────────────── */
-    #passwordModal {
+    #passwordModal, .password-modal-overlay {
         display:none;
         position:fixed;
         inset:0;
@@ -723,6 +723,22 @@
             <div class="password-actions">
                 <button class="password-cancel" onclick="closePasswordModal()">ОТКАЗ</button>
                 <button class="password-save" onclick="submitPasswordModal()">ЗАПАЗИ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminResetModal" class="password-modal-overlay">
+        <div class="password-card">
+            <div class="password-title">🔑 НОВА ПАРОЛА</div>
+            <div class="password-subtitle" id="adminResetSubtitle">Задай нова парола.</div>
+            <label class="password-label">Нова парола</label>
+            <input id="adminResetPasswordInput" class="password-input" type="password" autocomplete="new-password" placeholder="Въведи новата парола">
+            <label class="password-label">Потвърди новата парола</label>
+            <input id="adminResetPasswordConfirm" class="password-input" type="password" autocomplete="new-password" placeholder="Повтори новата парола">
+            <div class="password-error" id="adminResetError"></div>
+            <div class="password-actions">
+                <button class="password-cancel" onclick="closeAdminResetModal()">ОТКАЗ</button>
+                <button class="password-save" onclick="submitAdminResetModal()">ЗАПАЗИ</button>
             </div>
         </div>
     </div>
@@ -1148,7 +1164,46 @@
         }
 
         function adminResetPassword(username) {
-            openPasswordModal('admin', username);
+            passwordModalUsername = username || '';
+            document.getElementById('adminResetSubtitle').textContent = 'Задай нова парола за ' + passwordModalUsername + '.';
+            document.getElementById('adminResetPasswordInput').value = '';
+            document.getElementById('adminResetPasswordConfirm').value = '';
+            document.getElementById('adminResetError').textContent = '';
+            document.getElementById('adminResetModal').style.display = 'flex';
+            setTimeout(function () { document.getElementById('adminResetPasswordInput').focus(); }, 50);
+        }
+
+        function closeAdminResetModal() {
+            document.getElementById('adminResetModal').style.display = 'none';
+        }
+
+        async function submitAdminResetModal() {
+            const error = document.getElementById('adminResetError');
+            const password = document.getElementById('adminResetPasswordInput').value;
+            const confirm = document.getElementById('adminResetPasswordConfirm').value;
+            error.textContent = '';
+
+            if (password.length < 4) {
+                error.textContent = 'Паролата трябва да е поне 4 символа.';
+                return;
+            }
+            if (password !== confirm) {
+                error.textContent = 'Новите пароли не съвпадат.';
+                return;
+            }
+
+            try {
+                const data = await apiPost('resetPassword', {
+                    session: currentSession,
+                    username: passwordModalUsername,
+                    passwordHash: await sha256(password)
+                });
+                if (!data.ok) throw new Error(data.error || 'Неуспешно нулиране на паролата.');
+                closeAdminResetModal();
+                showToast('✓ Паролата на ' + passwordModalUsername + ' е сменена.', 'success');
+            } catch (e) {
+                error.textContent = e.message || 'Възникна грешка.';
+            }
         }
 
         function changeOwnPassword() {

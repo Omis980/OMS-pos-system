@@ -1165,29 +1165,111 @@
 
         function adminResetPassword(username) {
             passwordModalUsername = username || '';
-            document.getElementById('adminResetSubtitle').textContent = 'Задай нова парола за ' + passwordModalUsername + '.';
-            document.getElementById('adminResetPasswordInput').value = '';
-            document.getElementById('adminResetPasswordConfirm').value = '';
-            document.getElementById('adminResetError').textContent = '';
-            document.getElementById('adminResetModal').style.display = 'flex';
-            setTimeout(function () { document.getElementById('adminResetPasswordInput').focus(); }, 50);
+
+            // Създаваме прозореца динамично, за да няма конфликт с други modal-и.
+            const old = document.getElementById('dynamicAdminResetModal');
+            if (old) old.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'dynamicAdminResetModal';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:50000;background:rgba(13,17,23,.82);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+            overlay.innerHTML = `
+                <div class="password-card" style="width:420px;max-width:calc(100vw - 32px);">
+                    <div class="password-title">🔑 НОВА ПАРОЛА</div>
+                    <div class="password-subtitle">Задай нова парола за <strong>${escapeHtml(passwordModalUsername)}</strong>.</div>
+                    <label class="password-label">Нова парола</label>
+                    <input id="dynamicAdminPassword" class="password-input" type="password" autocomplete="new-password" placeholder="Въведи новата парола">
+                    <label class="password-label">Потвърди новата парола</label>
+                    <input id="dynamicAdminPasswordConfirm" class="password-input" type="password" autocomplete="new-password" placeholder="Повтори новата парола">
+                    <div class="password-error" id="dynamicAdminPasswordError"></div>
+                    <div class="password-actions">
+                        <button class="password-cancel" type="button" id="dynamicAdminCancel">ОТКАЗ</button>
+                        <button class="password-save" type="button" id="dynamicAdminSave">ЗАПАЗИ</button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+
+            const close = function () {
+                const el = document.getElementById('dynamicAdminResetModal');
+                if (el) el.remove();
+            };
+
+            document.getElementById('dynamicAdminCancel').onclick = close;
+            document.getElementById('dynamicAdminSave').onclick = async function () {
+                const error = document.getElementById('dynamicAdminPasswordError');
+                const password = document.getElementById('dynamicAdminPassword').value;
+                const confirmPassword = document.getElementById('dynamicAdminPasswordConfirm').value;
+                error.textContent = '';
+
+                if (password.length < 4) {
+                    error.textContent = 'Паролата трябва да е поне 4 символа.';
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    error.textContent = 'Новите пароли не съвпадат.';
+                    return;
+                }
+
+                const saveButton = document.getElementById('dynamicAdminSave');
+                saveButton.disabled = true;
+                saveButton.textContent = 'ЗАПИСВАМ...';
+
+                try {
+                    const data = await apiPost('resetPassword', {
+                        session: currentSession,
+                        username: passwordModalUsername,
+                        passwordHash: await sha256(password)
+                    });
+
+                    if (!data.ok) throw new Error(data.error || 'Неуспешно нулиране на паролата.');
+
+                    close();
+                    showToast('✓ Паролата на ' + passwordModalUsername + ' е сменена.', 'success');
+                } catch (e) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'ЗАПАЗИ';
+                    error.textContent = e.message || 'Възникна грешка.';
+                    console.error('Admin password reset:', e);
+                }
+            };
+
+            document.getElementById('dynamicAdminPasswordConfirm').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') document.getElementById('dynamicAdminSave').click();
+            });
+
+            setTimeout(function () {
+                document.getElementById('dynamicAdminPassword').focus();
+            }, 30);
         }
 
+        // Старите функции остават безопасни, ако някъде има стар HTML cache.
         function closeAdminResetModal() {
-            document.getElementById('adminResetModal').style.display = 'none';
+            const dynamic = document.getElementById('dynamicAdminResetModal');
+            if (dynamic) dynamic.remove();
+            const legacy = document.getElementById('adminResetModal');
+            if (legacy) legacy.style.display = 'none';
         }
 
         async function submitAdminResetModal() {
+            // Поддържа стария modal, ако браузърът е заредил стария markup.
+            const passwordInput = document.getElementById('adminResetPasswordInput');
+            const confirmInput = document.getElementById('adminResetPasswordConfirm');
+            if (!passwordInput || !confirmInput) {
+                adminResetPassword(passwordModalUsername);
+                return;
+            }
+
+            const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
             const error = document.getElementById('adminResetError');
-            const password = document.getElementById('adminResetPasswordInput').value;
-            const confirm = document.getElementById('adminResetPasswordConfirm').value;
             error.textContent = '';
 
             if (password.length < 4) {
                 error.textContent = 'Паролата трябва да е поне 4 символа.';
                 return;
             }
-            if (password !== confirm) {
+            if (password !== confirmPassword) {
                 error.textContent = 'Новите пароли не съвпадат.';
                 return;
             }
@@ -1212,16 +1294,23 @@
         }
 
         async function adminToggleUser(username, active) {
+            const actionText = active ? 'активираш' : 'деактивираш';
+            if (!confirm('Сигурен ли си, че искаш да ' + actionText + ' потребителя „' + username + '“?')) return;
+
             try {
                 const data = await apiPost('setUserActive', {
                     session: currentSession,
                     username: username,
-                    active: active
+                    active: !!active
                 });
-                if (!data.ok) throw new Error(data.error || 'Неуспешна промяна.');
+
+                if (!data.ok) throw new Error(data.error || 'Неуспешна промяна на статуса.');
+
                 await loadAdminUsers();
+                showToast('✓ ' + username + (active ? ' е активиран.' : ' е деактивиран.'), 'success');
             } catch (e) {
-                showToast('❌ ' + e.message, 'error');
+                console.error('Admin user status:', e);
+                showToast('❌ ' + (e.message || 'Възникна грешка.'), 'error');
             }
         }
 

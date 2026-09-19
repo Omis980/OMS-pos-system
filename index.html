@@ -1045,8 +1045,8 @@
                     return '<div class="admin-user">' +
                         '<div><div class="admin-user-name">' + escapeHtml(u.name) + '</div>' +
                         '<div class="admin-user-meta">' + escapeHtml(u.role) + disabled + '</div></div>' +
-                        '<button onclick="adminResetPassword(' + JSON.stringify(u.name) + ')">Нова парола</button>' +
-                        '<button onclick="adminToggleUser(' + JSON.stringify(u.name) + ',' + (!u.active) + ')">' + (u.active ? 'Деактивирай' : 'Активирай') + '</button>' +
+                        '<button onclick="adminResetPassword(' + escapeHtml(JSON.stringify(u.name)) + ')">Нова парола</button>' +
+                        '<button onclick="adminToggleUser(' + escapeHtml(JSON.stringify(u.name)) + ',' + (!u.active) + ')">' + (u.active ? 'Деактивирай' : 'Активирай') + '</button>' +
                         '</div>';
                 }).join('');
             } catch (e) {

@@ -224,12 +224,15 @@
 
   /* ── COMBO CARD — full-width, gold accent ── */
   .combo-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 4px 16px 16px;
-    overflow-y: auto;
-  }
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+  padding: 4px 16px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
   .combo-grid::-webkit-scrollbar { width: 4px; }
   .combo-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 

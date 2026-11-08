@@ -1122,6 +1122,128 @@
         }
     }
 
+/* ── Refined POS interface ─────────────────────────────────────────────── */
+:root {
+  --bg-primary: #07111f;
+  --bg-secondary: #0d1b2d;
+  --bg-card: #12243a;
+  --bg-card-hover: #17304d;
+  --border: rgba(150, 179, 211, .18);
+  --blue: #3979ed;
+  --blue-light: #79a9ff;
+  --blue-glow: rgba(57, 121, 237, .28);
+  --text: #f4f8ff;
+  --text-muted: #9db0c8;
+  --red: #fb6574;
+  --red-bg: rgba(251, 101, 116, .12);
+  --green: #41c991;
+  --orange: #ffbd59;
+  --orange-glow: rgba(255, 189, 89, .2);
+}
+
+body {
+  background:
+    radial-gradient(circle at 14% -15%, rgba(57,121,237,.20), transparent 33%),
+    radial-gradient(circle at 90% 110%, rgba(65,201,145,.12), transparent 32%),
+    var(--bg-primary);
+  letter-spacing: .01em;
+}
+
+button, input, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid rgba(121,169,255,.32);
+  outline-offset: 2px;
+}
+
+.main { grid-template-columns: minmax(300px, .88fr) minmax(440px, 1.35fr) minmax(260px, .7fr); gap: 14px; padding: 14px; }
+.panel {
+  background: linear-gradient(145deg, rgba(16,35,57,.96), rgba(10,25,43,.96));
+  border-color: var(--border);
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.025);
+}
+.panel-header { padding: 19px 20px 13px; }
+.panel-title {
+  color: var(--text);
+  font-size: 17px;
+  letter-spacing: 1.25px;
+  border: 0;
+  padding: 0;
+}
+.panel-title::after {
+  content: ''; display: block; width: 28px; height: 3px; margin-top: 8px;
+  border-radius: 6px; background: linear-gradient(90deg, var(--blue-light), var(--blue));
+}
+
+.tab-bar { gap: 8px; padding: 0 16px 14px; }
+.tab-btn { min-height: 36px; padding: 7px 15px; border-radius: 10px; border-color: transparent; background: rgba(255,255,255,.035); color: var(--text-muted); }
+.tab-btn:hover { border-color: rgba(121,169,255,.36); background: rgba(121,169,255,.08); color: var(--text); }
+.tab-btn.active { background: linear-gradient(135deg, #447ff0, #2d64d1); border-color: rgba(151,189,255,.36); box-shadow: 0 5px 15px rgba(30,84,194,.28); }
+
+.products-grid { gap: 11px; padding: 2px 16px 16px; }
+.product-card {
+  min-height: 132px; justify-content: center; gap: 9px; padding: 15px 10px;
+  background: linear-gradient(145deg, rgba(28,54,82,.88), rgba(17,36,58,.9));
+  border-color: rgba(150,179,211,.14); border-radius: 14px;
+}
+.product-card::before { background: linear-gradient(135deg, rgba(121,169,255,.18), transparent 62%); }
+.product-card:hover { border-color: rgba(121,169,255,.7); box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 0 1px rgba(121,169,255,.08); transform: translateY(-3px); }
+.product-card:active { transform: translateY(0) scale(.98); }
+.product-emoji { font-size: 42px; filter: drop-shadow(0 5px 4px rgba(0,0,0,.18)); }
+.product-name { font-weight: 600; line-height: 1.25; z-index: 1; }
+.product-price { color: var(--blue-light); font-weight: 700; z-index: 1; }
+
+.combo-grid { gap: 11px; padding: 2px 16px 16px; }
+.combo-card { padding: 15px; border-radius: 14px; background: linear-gradient(110deg, rgba(91,63,21,.38), rgba(22,43,65,.9) 42%); border-color: rgba(255,189,89,.22); }
+.combo-card:hover { border-color: rgba(255,189,89,.75); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+.combo-badge { border-radius: 12px; background: rgba(255,189,89,.14); border-color: rgba(255,189,89,.45); }
+.combo-name { font-weight: 700; }.combo-price-badge { border-color: rgba(255,189,89,.4); background: rgba(255,189,89,.12); }
+
+.order-table-header { margin: 0 16px; padding: 10px 4px; border-bottom-color: var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: .8px; }
+.order-items { padding: 4px 16px 10px; }
+.order-item { padding: 12px 4px; border-bottom-color: rgba(150,179,211,.1); }
+.order-item:hover { background: rgba(121,169,255,.035); }.order-item.is-combo { border-left-color: var(--orange); }
+.order-item-info .name { font-weight: 600; }.item-total { color: var(--blue-light); }.item-price { color: var(--text-muted); }
+.qty-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.04); border-color: var(--border); }
+.qty-btn:hover { border-color: var(--blue-light); background: rgba(121,169,255,.12); color: #fff; }
+.delete-btn { border-radius: 8px; }.delete-btn:hover { background: var(--red-bg); }
+.empty-order { color: var(--text-muted); }.empty-order .icon { opacity: .5; }
+
+.order-footer { padding: 16px 20px 20px; border-top-color: var(--border); background: linear-gradient(180deg, transparent, rgba(7,17,31,.18)); }
+.total-row { padding: 12px 14px; margin-bottom: 13px; border-radius: 12px; background: rgba(121,169,255,.065); }
+.total-label { font-size: 16px; color: var(--text-muted); }.total-amount { font-size: 34px; color: #a8c7ff; }
+.order-actions { gap: 10px; }.btn { min-height: 50px; border-radius: 11px; }
+.btn-clear { border-color: rgba(251,101,116,.45); background: rgba(251,101,116,.1); }.btn-clear:hover { background: rgba(251,101,116,.2); }
+.btn-confirm { background: linear-gradient(135deg, #447ff0, #285bc0); box-shadow: 0 8px 18px rgba(30,84,194,.22); }.btn-confirm:hover { background: linear-gradient(135deg, #5b91ff, #356bd5); }
+
+.history-list { padding: 4px 10px 10px; }.history-item { margin: 0 6px 4px; padding: 12px 10px; border: 1px solid transparent; border-radius: 11px; }
+.history-item:hover { background: rgba(121,169,255,.06); border-color: rgba(121,169,255,.13); }.history-icon { border-radius: 10px; background: rgba(57,121,237,.13); border-color: rgba(121,169,255,.24); }
+.history-amount { color: var(--blue-light); }.history-footer { padding: 12px 16px 16px; border-top-color: var(--border); }
+.btn-open-sheet { min-height: 42px; border-radius: 10px; border-color: rgba(65,201,145,.46); color: #68ddb0; background: rgba(65,201,145,.06); }.btn-open-sheet:hover { background: rgba(65,201,145,.14); }
+
+.statusbar { min-height: 44px; padding: 8px 20px; background: rgba(8,20,34,.9); border-top-color: var(--border); backdrop-filter: blur(12px); }
+.statusbar-right span[onclick], #changePasswordButton, #adminButton { padding: 5px 8px; border-radius: 7px; transition: background .18s, color .18s; }
+.statusbar-right span[onclick]:hover, #changePasswordButton:hover, #adminButton:hover { color: var(--text); background: rgba(121,169,255,.1); }
+
+#pinScreen { background: radial-gradient(circle at 50% 15%, rgba(57,121,237,.22), transparent 32%), var(--bg-primary); gap: 14px; }
+#pinScreen::before { content: 'POS'; width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 6px; border-radius: 22px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg, #5790ff, #254fae); box-shadow: 0 15px 35px rgba(35,78,174,.35); }
+.pin-title { font-size: 24px; letter-spacing: 1.5px; }.account-label { font-size: 10px; }.account-input { min-height: 48px; border-radius: 11px; background: rgba(18,36,58,.88); border-color: var(--border); }
+.account-input:focus { border-color: var(--blue-light); box-shadow: 0 0 0 4px rgba(121,169,255,.12); }.account-login-btn { min-height: 48px; border-radius: 11px; background: linear-gradient(135deg, #447ff0, #285bc0); box-shadow: 0 9px 20px rgba(30,84,194,.25); }.account-login-btn:hover { background: linear-gradient(135deg, #5b91ff, #356bd5); }
+
+#adminPanel, #shiftScreen { background: rgba(4,12,23,.78); backdrop-filter: blur(12px); }.admin-card, .password-card, .shift-card { background: linear-gradient(145deg, #10243b, #0a192b); border-color: rgba(150,179,211,.2); border-radius: 18px; box-shadow: 0 24px 70px rgba(0,0,0,.45); }
+.admin-form input, .admin-form select, .password-input { background: rgba(7,17,31,.5); border-color: var(--border); border-radius: 10px; }.admin-user { border-color: var(--border); border-radius: 11px; background: rgba(7,17,31,.32); }.admin-user button, .admin-close { border-color: var(--border); border-radius: 9px; }.admin-save, .password-save, .shift-confirm { border-radius: 9px; background: linear-gradient(135deg, #447ff0, #285bc0); border-color: #3979ed; }.password-cancel, .shift-cancel { border-radius: 9px; }
+.shift-stat, .shift-info { background: rgba(7,17,31,.32); border-color: var(--border); border-radius: 12px; }.shift-stat-value { color: #a8c7ff; }
+.toast { border-radius: 11px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+@media (max-width: 1100px) and (min-width: 769px) { .main { grid-template-columns: minmax(260px,.8fr) minmax(390px,1.2fr); } .main > .panel:last-child { grid-column: 1 / -1; min-height: 205px; } .history-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); align-content: start; } }
+@media (max-width: 768px) {
+  .main { padding: 10px; gap: 10px; }.panel { border-radius: 15px; }.panel-header { padding: 16px 16px 11px; }
+  .main > .panel:first-child, .main > .order-panel { height: 58dvh; min-height: 400px; }.main > .panel:last-child { height: 42dvh; min-height: 300px; }
+  .products-grid, .combo-grid { padding: 2px 10px 12px; }.product-card { min-height: 120px; border-radius: 12px; }.product-emoji { font-size: 37px; }
+  .order-table-header { margin: 0 10px; }.order-items { padding: 4px 10px 8px; }.order-footer { padding: 10px 12px 13px; }.total-row { padding: 10px 12px; }
+  .history-list { padding: 4px 6px 8px; }.statusbar { padding: 6px 8px; }
+}
+@media (max-width: 420px) { .main > .panel:first-child, .main > .order-panel { min-height: 370px; }.product-card { min-height: 108px; }.total-amount { font-size: 29px; } }
 </style>
 </head>
 <body>
@@ -1219,6 +1341,8 @@
                 <input id="newUserPassword" type="password" placeholder="Начална парола" maxlength="100">
                 <select id="newUserRole">
                     <option value="cashier">Касиер</option>
+                    <option value="manager">Управител</option>
+                    <option value="viewer">Само справки</option>
                     <option value="admin">Администратор</option>
                 </select>
                 <button class="admin-save" onclick="adminCreateUser()">+ ДОБАВИ ПОТРЕБИТЕЛ</button>
@@ -1436,7 +1560,7 @@
 
         function updateAdminButton() {
             const btn = document.getElementById('adminButton');
-            if (btn) btn.style.display = currentUser && currentUser.role === 'admin' ? 'inline' : 'none';
+            if (btn) btn.style.display = currentUser && (currentUser.permissions || []).includes('manage_users') ? 'inline' : 'none';
         }
 
         async function logoutUser() {
@@ -1458,10 +1582,9 @@
 
         async function showShiftSummary() {
             if (!currentSession) return;
-            fetch(SHEETS_URL + '?action=getShiftSummary&session=' + encodeURIComponent(currentSession))
-                .then(function (r) { return r.json(); })
+            apiPost('getShiftSummary', { session: currentSession })
                 .then(function (data) {
-                    if (data.error) throw new Error(data.error);
+                    if (!data.ok && data.error) throw new Error(data.error);
                     document.getElementById('shiftDate') && (document.getElementById('shiftDate').textContent = data.date || '-');
                     document.getElementById('shiftCashier') && (document.getElementById('shiftCashier').textContent = data.cashier || getCashierName());
                     document.getElementById('shiftOrders') && (document.getElementById('shiftOrders').textContent = data.orderCount || 0);
@@ -1486,7 +1609,7 @@
         }
 
         async function openAdminPanel() {
-            if (!currentUser || currentUser.role !== 'admin') return;
+            if (!currentUser || !(currentUser.permissions || []).includes('manage_users')) return;
             document.getElementById('adminPanel').style.display = 'flex';
             await loadAdminUsers();
         }
@@ -2020,63 +2143,33 @@
             renderOrder();
         }
 
-        function confirmOrder() {
+        async function confirmOrder() {
             if (!order.length || isSubmitting) return;
 
             isSubmitting = true;
             document.body.classList.add('locked');
-
-            const total = getTotal();
-            const now = new Date();
-            const date = now.toLocaleDateString('bg-BG');
-            const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
             const snapshot = [...order];
-            const user = getCashierName();
-
-            reserveNextOrderId().then(function (newOrderId) {
-                orderCount = newOrderId;
-
-                history.unshift({ id: orderCount, time, amount: total });
+            try {
+                if (!SHEETS_URL || SHEETS_URL === 'ПОСТАВИ_URL_ТУК') throw new Error('Липсва връзка с Google Sheets.');
+                showToast('⏳ Записвам поръчката…', 'pending');
+                const data = await apiPost('submitOrder', {
+                    session: currentSession,
+                    items: snapshot.map(o => ({ id: o.product.id, qty: o.qty, isCombo: !!o.isCombo }))
+                });
+                if (!data.ok) throw new Error(data.error || 'Поръчката не е записана.');
+                orderCount = data.orderId;
+                history.unshift({ id: data.orderId, time: data.time, amount: Number(data.total) });
                 order = [];
                 renderOrder();
                 renderHistory();
-
-                if (SHEETS_URL && SHEETS_URL !== 'ПОСТАВИ_URL_ТУК') {
-                    showToast('⏳ Записвам в Google Sheets…', 'pending');
-
-                    const rows = [];
-                    snapshot.forEach(o => {
-                        rows.push({
-                            orderId: orderCount,
-                            date,
-                            time,
-                            name: o.product.name,
-                            type: o.isCombo ? 'КОМБО' : 'Продукт',
-                            qty: o.qty,
-                            price: o.product.price,
-                            rowTotal: (o.product.price * o.qty).toFixed(2),
-                            isLast: false,
-                            total: '',
-                            user: user,
-                        });
-                    });
-                    rows[rows.length - 1].isLast = true;
-                    rows[rows.length - 1].total = total.toFixed(2);
-
-                    enqueueOrder(rows, function () {
-                        isSubmitting = false;
-                        document.body.classList.remove('locked');
-                    });
-                } else {
-                    isSubmitting = false;
-                    document.body.classList.remove('locked');
-                }
-            }).catch(function (err) {
-                console.error('Грешка при резервиране на № на поръчка:', err);
-                showToast('❌ Грешка — поръчката НЕ е записана, опитай пак', 'error');
+                showToast('✅ Поръчка №' + data.orderId + ' е записана.', 'success');
+            } catch (err) {
+                console.error('Грешка при запис на поръчка:', err);
+                showToast('❌ ' + (err.message || 'Поръчката не е записана.'), 'error');
+            } finally {
                 isSubmitting = false;
                 document.body.classList.remove('locked');
-            });
+            }
         }
 
         // ── Опашка — поръчките се изпращат една по една, без да се оплитат ──
@@ -2165,6 +2258,10 @@
       `).join('');
         }
         function openSheet() {
+            if (!currentUser || !(currentUser.permissions || []).includes('view_sheet')) {
+                showToast('⛔ Нямате право да отваряте таблицата.', 'error');
+                return;
+            }
             if (SHEET_VIEW_URL && SHEET_VIEW_URL !== 'ПОСТАВИ_SHEET_URL_ТУК') {
                 window.open(SHEET_VIEW_URL, '_blank');
             } else {

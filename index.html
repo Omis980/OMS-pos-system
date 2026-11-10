@@ -1244,6 +1244,15 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .history-list { padding: 4px 6px 8px; }.statusbar { padding: 6px 8px; }
 }
 @media (max-width: 420px) { .main > .panel:first-child, .main > .order-panel { min-height: 370px; }.product-card { min-height: 108px; }.total-amount { font-size: 29px; } }
+
+/* ── Discount ── */
+.discount-row { display:flex; justify-content:space-between; align-items:center; padding:0 14px; margin-bottom:8px; font-size:13px; font-weight:600; color:var(--green); }
+.btn-discount { width:100%; margin-bottom:10px; min-height:42px; background:rgba(255,189,89,.1); color:var(--orange); border:1px solid rgba(255,189,89,.45); }
+.btn-discount:hover { background:rgba(255,189,89,.2); }
+.discount-toggle { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
+.discount-toggle button { padding:10px; border-radius:9px; cursor:pointer; font-weight:700; font-family:'Rajdhani',sans-serif; letter-spacing:.8px; background:transparent; border:1px solid var(--border); color:var(--text-muted); }
+.discount-toggle button.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.password-actions .discount-remove { background:var(--red-bg); border:1px solid rgba(251,101,116,.45); color:var(--red); }
 </style>
 </head>
 <body>
@@ -1284,6 +1293,25 @@ button:focus-visible, input:focus-visible, select:focus-visible {
         </div>
     </div>
 
+
+    <div id="discountModal" class="password-modal-overlay">
+        <div class="password-card">
+            <div class="password-title">🏷 ОТСТЪПКА</div>
+            <div class="password-subtitle">Избери вида и въведи стойността на отстъпката.</div>
+            <div class="discount-toggle">
+                <button id="discTypePercent" class="active" onclick="setDiscountType('percent')">% Процент</button>
+                <button id="discTypeFixed" onclick="setDiscountType('fixed')">$ Сума</button>
+            </div>
+            <label class="password-label" id="discountInputLabel">Процент отстъпка</label>
+            <input id="discountInput" class="password-input" type="number" min="0" step="any" inputmode="decimal" placeholder="Напр. 10">
+            <div class="password-error" id="discountError"></div>
+            <div class="password-actions">
+                <button class="discount-remove" onclick="removeDiscount()">ПРЕМАХНИ</button>
+                <button class="password-cancel" onclick="closeDiscountModal()">ОТКАЗ</button>
+                <button class="password-save" onclick="applyDiscount()">ПРИЛОЖИ</button>
+            </div>
+        </div>
+    </div>
 
     <div id="passwordModal">
         <div class="password-card">
@@ -1390,6 +1418,11 @@ button:focus-visible, input:focus-visible, select:focus-visible {
                 </div>
             </div>
             <div class="order-footer">
+                <div class="discount-row" id="discountRow" style="display:none">
+                    <span id="discountLabel">Отстъпка</span>
+                    <span id="discountAmount">-0.00 $</span>
+                </div>
+                <button class="btn btn-discount" id="discountBtn" onclick="openDiscountModal()">🏷 ОТСТЪПКА</button>
                 <div class="total-row">
                     <span class="total-label">TOTAL:</span>
                     <span class="total-amount" id="totalAmount">0.00 $</span>
@@ -2087,6 +2120,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             const container = document.getElementById('orderItems');
 
             if (order.length === 0) {
+                discount = null;
                 container.innerHTML = `
           <div class="empty-order">
             <div class="icon">🛒</div>
@@ -2127,7 +2161,67 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             order.splice(idx, 1);
             renderOrder();
         }
-        function getTotal() { return order.reduce((s, o) => s + o.product.price * o.qty, 0); }
+        // ── ОТСТЪПКА ──
+        let discount = null; // { type: 'percent' | 'fixed', value: number }
+        let discountDraftType = 'percent';
+
+        function getSubtotal() { return order.reduce((s, o) => s + o.product.price * o.qty, 0); }
+
+        function getDiscountAmount() {
+            if (!discount) return 0;
+            const sub = getSubtotal();
+            const d = discount.type === 'percent' ? sub * discount.value / 100 : discount.value;
+            return Math.min(sub, Math.max(0, d));
+        }
+
+        function getTotal() { return Math.max(0, getSubtotal() - getDiscountAmount()); }
+
+        function setDiscountType(type) {
+            discountDraftType = type;
+            document.getElementById('discTypePercent').classList.toggle('active', type === 'percent');
+            document.getElementById('discTypeFixed').classList.toggle('active', type === 'fixed');
+            document.getElementById('discountInputLabel').textContent = type === 'percent' ? 'Процент отстъпка' : 'Сума на отстъпката ($)';
+            document.getElementById('discountInput').placeholder = type === 'percent' ? 'Напр. 10' : 'Напр. 50';
+        }
+
+        function openDiscountModal() {
+            if (isSubmitting) return;
+            if (!order.length) { showToast('Първо добави продукти в поръчката.', 'error'); return; }
+            setDiscountType(discount ? discount.type : 'percent');
+            document.getElementById('discountInput').value = discount ? discount.value : '';
+            document.getElementById('discountError').textContent = '';
+            document.getElementById('discountModal').style.display = 'flex';
+            setTimeout(function () { document.getElementById('discountInput').focus(); }, 50);
+        }
+
+        function closeDiscountModal() {
+            document.getElementById('discountModal').style.display = 'none';
+        }
+
+        function applyDiscount() {
+            const err = document.getElementById('discountError');
+            const value = parseFloat(document.getElementById('discountInput').value);
+            if (!isFinite(value) || value <= 0) { err.textContent = 'Въведи валидна стойност.'; return; }
+            if (discountDraftType === 'percent' && value > 100) { err.textContent = 'Процентът не може да е над 100.'; return; }
+            if (discountDraftType === 'fixed' && value > getSubtotal()) { err.textContent = 'Отстъпката е по-голяма от сумата на поръчката.'; return; }
+            discount = { type: discountDraftType, value: value };
+            closeDiscountModal();
+            updateTotals();
+            showToast('✓ Отстъпката е приложена.', 'success');
+        }
+
+        function removeDiscount() {
+            discount = null;
+            closeDiscountModal();
+            updateTotals();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('discountInput').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') applyDiscount();
+                if (e.key === 'Escape') closeDiscountModal();
+            });
+        });
 
         function updateTotals() {
             const total = getTotal();
@@ -2135,11 +2229,24 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             document.getElementById('statusTotal').textContent = total.toFixed(2) + ' $';
             const count = order.reduce((s, o) => s + o.qty, 0);
             document.getElementById('itemCount').textContent = count + ' items';
+
+            const row = document.getElementById('discountRow');
+            const btn = document.getElementById('discountBtn');
+            if (discount && order.length) {
+                row.style.display = 'flex';
+                document.getElementById('discountLabel').textContent = 'Отстъпка' + (discount.type === 'percent' ? ' (' + discount.value + '%)' : '');
+                document.getElementById('discountAmount').textContent = '−' + getDiscountAmount().toFixed(2) + ' $';
+                btn.textContent = '🏷 ПРОМЕНИ ОТСТЪПКАТА';
+            } else {
+                row.style.display = 'none';
+                btn.textContent = '🏷 ОТСТЪПКА';
+            }
         }
 
         function clearOrder() {
             if (isSubmitting) return;
             order = [];
+            discount = null;
             renderOrder();
         }
 
@@ -2154,12 +2261,14 @@ button:focus-visible, input:focus-visible, select:focus-visible {
                 showToast('⏳ Записвам поръчката…', 'pending');
                 const data = await apiPost('submitOrder', {
                     session: currentSession,
-                    items: snapshot.map(o => ({ id: o.product.id, qty: o.qty, isCombo: !!o.isCombo }))
+                    items: snapshot.map(o => ({ id: o.product.id, qty: o.qty, isCombo: !!o.isCombo })),
+                    discount: discount
                 });
                 if (!data.ok) throw new Error(data.error || 'Поръчката не е записана.');
                 orderCount = data.orderId;
                 history.unshift({ id: data.orderId, time: data.time, amount: Number(data.total) });
                 order = [];
+                discount = null;
                 renderOrder();
                 renderHistory();
                 showToast('✅ Поръчка №' + data.orderId + ' е записана.', 'success');

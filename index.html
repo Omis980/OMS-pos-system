@@ -1304,6 +1304,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             </div>
             <label class="password-label" id="discountInputLabel">Процент отстъпка</label>
             <input id="discountInput" class="password-input" type="number" min="0" step="any" inputmode="decimal" placeholder="Напр. 10">
+            <label class="password-label" for="discountReason">Причина за отстъпката <span style="font-weight:400;text-transform:none;letter-spacing:0">(незадължително)</span></label>
+            <textarea id="discountReason" class="password-input" rows="2" maxlength="250" placeholder="Напр. компенсация, редовен клиент... " style="resize:vertical;min-height:64px"></textarea>
             <div class="password-error" id="discountError"></div>
             <div class="password-actions">
                 <button class="discount-remove" onclick="removeDiscount()">ПРЕМАХНИ</button>
@@ -2189,6 +2191,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             if (!order.length) { showToast('Първо добави продукти в поръчката.', 'error'); return; }
             setDiscountType(discount ? discount.type : 'percent');
             document.getElementById('discountInput').value = discount ? discount.value : '';
+            document.getElementById('discountReason').value = discount ? (discount.reason || '') : '';
             document.getElementById('discountError').textContent = '';
             document.getElementById('discountModal').style.display = 'flex';
             setTimeout(function () { document.getElementById('discountInput').focus(); }, 50);
@@ -2204,7 +2207,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             if (!isFinite(value) || value <= 0) { err.textContent = 'Въведи валидна стойност.'; return; }
             if (discountDraftType === 'percent' && value > 100) { err.textContent = 'Процентът не може да е над 100.'; return; }
             if (discountDraftType === 'fixed' && value > getSubtotal()) { err.textContent = 'Отстъпката е по-голяма от сумата на поръчката.'; return; }
-            discount = { type: discountDraftType, value: value };
+            const reason = document.getElementById('discountReason').value.trim();
+            discount = { type: discountDraftType, value: value, reason: reason };
             closeDiscountModal();
             updateTotals();
             showToast('✓ Отстъпката е приложена.', 'success');
@@ -2212,6 +2216,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
         function removeDiscount() {
             discount = null;
+            document.getElementById('discountReason').value = '';
             closeDiscountModal();
             updateTotals();
         }
@@ -2247,6 +2252,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
             if (isSubmitting) return;
             order = [];
             discount = null;
+            document.getElementById('discountReason').value = '';
             renderOrder();
         }
 
